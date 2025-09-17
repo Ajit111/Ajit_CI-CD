@@ -1,4 +1,4 @@
-name: Selenium CI with Maven
+name: Selenium BDD CI with Maven
 
 on:
   push:
@@ -8,26 +8,37 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      # 1. Repo checkout
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v4
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        cache: maven
+      # 2. JDK setup
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Run Tests and Generate Reports
-      run: mvn clean verify -B
+      # 3. Run Cucumber tests via Maven
+      - name: Run BDD Tests
+        run: mvn clean test -B
 
-    - name: Upload Cucumber Reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: cucumber-reports
-        path: target/cucumber-reports/
+      # 4. Upload surefire/testng/cucumber reports (always upload even on failure)
+      - name: Upload Cucumber Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports
+          path: target/cucumber-reports/
+
+      # 5. (Optional) Upload Surefire Reports
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
